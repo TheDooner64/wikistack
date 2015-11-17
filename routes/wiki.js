@@ -1,12 +1,30 @@
 var express = require('express');
 var router = express.Router();
+var models = require('../models/index.js');
+var Page = models.Page;
+var User = models.User;
 
 router.get("/", function(req, res, next) {
   res.redirect("/");
 });
 
 router.post("/", function(req, res, next) {
-  res.status(200).send("Testing the /wiki post route");
+  var title = req.body.title;
+  var content = req.body.content;
+  // var status = req.body.status;
+  // var author = req.body.author;
+  var page = new Page({
+    title: title,
+    content: content
+  });
+
+  page.save()
+    .then(function() {
+      res.redirect("/");
+    })
+    .then(null, function(err) {
+      console.error(err);
+    });
 });
 
 router.get("/add", function(req, res, next) {

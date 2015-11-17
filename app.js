@@ -26,8 +26,6 @@ var server = app.listen(port,function(){
 	console.log("Listening on port: ",port);
 });
 
-// Error handling middleware to go here
-
 app.use(function(req, res, next){
 	
 	res.on('finish',function(){
@@ -43,3 +41,15 @@ app.get("/", function(req, res, next) {
 app.use(express.static(__dirname + "/public"));
 
 app.use("/wiki", wikiRoutes);
+
+// if we don't catch the request above, we default to a 404
+app.use(function (req, res, next) {
+  var err = new Error('not found');
+  err.status = 404;
+  next(err); // triggers error-handling middleware
+});
+
+// error-handling middleware (has 4 arguments)
+app.use(function (err, req, res, next) {
+  res.status(err.status || 500).send(err);
+});
