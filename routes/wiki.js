@@ -5,7 +5,11 @@ var Page = models.Page;
 var User = models.User;
 
 router.get("/", function(req, res, next) {
-  res.redirect("/");
+  Page.find({}).exec()
+    .then(function(pages) {
+      console.log(pages);
+      res.render("index", { pages: pages });
+    });
 });
 
 router.post("/", function(req, res, next) {

@@ -2,6 +2,7 @@ var express = require('express');
 var app = express();
 var port = 3000;
 var swig = require("swig");
+require('./filters')(swig);
 var bodyParser = require('body-parser');
 var wikiRoutes = require('./routes/wiki.js');
 
