@@ -20,7 +20,7 @@ router.post("/", function(req, res, next) {
 
   page.save()
     .then(function() {
-      res.redirect("/");
+      res.redirect(page.route);
     })
     .then(null, function(err) {
       console.error(err);
@@ -30,6 +30,18 @@ router.post("/", function(req, res, next) {
 router.get("/add", function(req, res, next) {
   var locals = { };
   res.render("addpage", locals);
+});
+
+router.get("/:urlTitle",function(req,res,next){
+  Page.findOne({urlTitle: req.params.urlTitle}).exec()
+    .then(function(value){
+      res.render("wikipage",value);
+      console.log(value);
+    })
+    .then(null, function(err) {
+      console.error(err);
+    });
+  
 });
 
 module.exports = router;
