@@ -3,6 +3,7 @@ var app = express();
 var port = 3000;
 var swig = require("swig");
 var bodyParser = require('body-parser');
+var wikiRoutes = require('./routes/wiki.js');
 
 // Default settings for Swig template engine
   // Set which function to use when rendering HTML
@@ -23,14 +24,15 @@ app.use(bodyParser.json());
 
 var server = app.listen(port,function(){
 	console.log("Listening on port: ",port);
-})
+});
 
+// Error handling middleware to go here
 
-app.use(function(req,res,next){
+app.use(function(req, res, next){
 	
 	res.on('finish',function(){
-		console.log("Method: ",req.method,"Path: ", req.path,"Status Code: ", res.statusCode)
-	})
+		console.log("Method: ",req.method,"Path: ", req.path,"Status Code: ", res.statusCode);
+	});
 	next();
 });
 
@@ -39,3 +41,5 @@ app.get("/", function(req, res, next) {
 });
 
 app.use(express.static(__dirname + "/public"));
+
+app.use("/wiki", wikiRoutes);
