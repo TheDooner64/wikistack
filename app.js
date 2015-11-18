@@ -1,10 +1,13 @@
 var express = require('express');
 var app = express();
-var port = 3000;
-var swig = require("swig");
-require('./filters')(swig);
+
+var morgan = require('morgan');
 var bodyParser = require('body-parser');
+var swig = require('swig');
+var path = require('path');
 var wikiRoutes = require('./routes/wiki.js');
+var usersRoutes = require('./routes/users.js');
+require('./filters')(swig);
 
 // Default settings for Swig template engine
   // Set which function to use when rendering HTML
@@ -17,40 +20,33 @@ app.set('views', __dirname + '/views');
 app.set('view cache', false);
 swig.setDefaults({ cache: false});
 
+// logging middleware
+app.use(morgan('dev'));
+
 // HTTP body parsing (JSON or URL-encoded) middleware
-  // We include both of these so we can parse the two major kinds of bodies
-  // HTML forms default to a URL encoded body
 app.use(bodyParser.urlencoded( { extended: true }));
 app.use(bodyParser.json());
 
+// Serve up public directory of static files (i.e. CSS file)
+app.use(express.static(__dirname + '/public'));
+
+// Start server
+var port = 3000;
 var server = app.listen(port,function(){
-	console.log("Listening on port: ",port);
+	console.log('Listening on port: ',port);
 });
 
-app.use(function(req, res, next){
-	
-	res.on('finish',function(){
-		console.log("Method: ",req.method,"Path: ", req.path,"Status Code: ", res.statusCode);
-	});
-	next();
+// Sub routes
+app.use('/wiki', wikiRoutes);
+app.use('/users', usersRoutes);
+
+// Render the index file at the root path
+app.get('/', function(req, res, next) {
+  res.render('index');
 });
 
-app.get("/", function(req, res, next) {
-	res.render('index');
-});
-
-app.use(express.static(__dirname + "/public"));
-
-app.use("/wiki", wikiRoutes);
-
-// if we don't catch the request above, we default to a 404
-app.use(function (req, res, next) {
-  var err = new Error('not found');
-  err.status = 404;
-  next(err); // triggers error-handling middleware
-});
-
-// error-handling middleware (has 4 arguments)
+// error-handling middleware
 app.use(function (err, req, res, next) {
-  res.status(err.status || 500).send(err);
+  console.error(err);
+  res.status(err.status || 500).send(err.message);
 });

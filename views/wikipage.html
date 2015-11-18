@@ -1,17 +1,20 @@
 {% extends "layout.html" %}
 
 {% block content %}
-  <h3>{{title}}<small> (<a href="PLACEHOLDER_URL_TITLE/similar">Similar</a>)</small></h3>
-  <h4>by <a href="PLACEHOLDER-AUTHOR-URL">{{author}}</a></h4>
-  <div>
-    {% for tag in tags %}
-    <a href= "/wiki/search?tags={{tag}}">#{{ tag }}  </a>
+<h3>{{ page.title }}
+    <small> (<a href="{{ page.route }}/similar">Similar</a>)</small>
+</h3>
+<h4>by <a href="/users/{{ page.author._id.toString() }}">{{ page.author.name }}</a></h4>
+<ul>
+    {% for tag in page.tags %}
+    <li>
+        {{ tag }}
+    </li>
     {% endfor %}
-  </div>
-  <hr/>
-  <div>PLACEHOLDER AUTHOR NAME WITH LINK TO AUTHOR PAGE</div>
-  <div class="page-body">{{content}}</div>
-  <hr/>
-  <a href="PLACEHOLDER_URL_TITLE/edit" class="btn btn-primary">edit this page</a>
-  <a href="PLACEHOLDER_URL_TITLE/delete" class="btn btn-danger">delete this page</a>
+</ul>
+<hr/>
+<div class="page-body">{% autoescape false %}{{ page.renderedContent }}{% endautoescape %}</div>
+<hr/>
+<a href="PLACEHOLDER_URL_TITLE/edit" class="btn btn-primary">edit this page</a>
+<a href="PLACEHOLDER_URL_TITLE/delete" class="btn btn-danger">delete this page</a>
 {% endblock %}

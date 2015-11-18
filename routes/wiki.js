@@ -4,70 +4,64 @@ var models = require('../models/index.js');
 var Page = models.Page;
 var User = models.User;
 
-router.get("/", function(req, res, next) {
+router.get('/', function(req, res, next) {
   Page.find({}).exec()
     .then(function(pages) {
-      //console.log(pages);
-      res.render("index", { pages: pages });
-    });
+      res.render('index', { pages: pages });
+    })
+    .then(null, next);
 });
 
-router.post("/", function(req, res, next) {
-  var title = req.body.title;
-  var content = req.body.content;
-  var userProps = {name: req.body.name, email: req.body.email};
-
-  var user = User.findOrCreate(userProps);
-  // var status = req.body.status;
-  // var author = req.body.author;
-  var page = new Page({
-    title: title,
-    content: content,
-    tags: req.body.tags
-  });
-
-  page.save()
-    .then(function() {
+router.post('/', function(req, res, next) {
+  User.findOrCreate({
+    name: req.body.name,
+    email: req.body.email
+  }).then(function(user) {
+    var newPage = new Page({
+      title: req.body.title,
+      content: req.body.content,
+      status: req.body.status,
+      tags: req.body.tags.split(','),
+      author: user._id
+    });
+    return newPage.save();
+  }).then(function(page) {
       res.redirect(page.route);
-    })
-    .then(null, function(err) {
-      console.error(err);
-    });
+    }).then(null, next);
 });
 
-router.get("/add", function(req, res, next) {
-  var locals = { };
-  res.render("addpage", locals);
+router.get('/add', function(req, res, next) {
+  res.render('addpage');
 });
 
-router.get("/search",function(req,res,next){
-  var tags = req.query.tags;
-  // res.render("search")
-  if(tags === ""||tags === undefined){
-  res.render("search",{pages: ""});
-  }else{
-    console.log(tags);
-    tags = tags.split(" ");
-    Page.find({tags: {$in: tags}}).exec()
-    .then(function(values){
-      res.render("search",{pages: values});
+router.get('/search',function(req, res, next) {
+  var tagToSearch = req.query.search;
+  Page.findByTag(tagToSearch)
+    .then(function(pages) {
+      res.render('index', { pages: pages });
     })
-  }
+    .then(null, next);
+});
 
-})
-
-
-
-router.get("/:urlTitle",function(req,res,next){
-  Page.findOne({urlTitle: req.params.urlTitle}).exec()
-    .then(function(value){
-      res.render("wikipage",value);
+router.get("/:urlTitle", function(req, res, next) {
+  Page.findOne({ urlTitle: req.params.urlTitle })
+    .populate('author')
+    .then(function(page){
+      res.render('wikipage', { page: page });
       //console.log(value);
     })
-    .then(null, function(err) {
-      console.error(err);
-    });
-  
+    .then(null, next);
+});
+
+router.get('/:urlTitle/similar', function (req, res, next) {
+    Page.findOne({ urlTitle: req.params.urlTitle })
+      .then(function(page) {
+        return page.findSimilar();
+      })
+      .then(function(pages) {
+        res.render('index', { pages: pages });
+      })
+      .then(null, next);
 });
 
 module.exports = router;
